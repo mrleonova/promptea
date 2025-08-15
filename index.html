@@ -38,121 +38,17 @@
         }
     </script>
     
-    <!-- Supabase -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        'sans': ['Inter', 'system-ui', 'sans-serif']
-                    }
-                }
-            }
-        }
-    </script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <style>
-        /* Custom animations */
-        @keyframes slideIn {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        .slide-in {
-            animation: slideIn 0.3s ease-out;
-        }
-        
-        .fade-in {
-            animation: fadeIn 0.2s ease-out;
-        }
-        
-        /* Smooth transitions */
-        * {
-            transition: all 0.2s ease;
-        }
-        
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 3px;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
-        
-        /* Offline indicator */
-        .offline-indicator {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background: #ef4444;
-            color: white;
-            text-align: center;
-            padding: 8px;
-            font-size: 14px;
-            z-index: 1000;
-            transform: translateY(-100%);
-            transition: transform 0.3s ease;
-        }
-        
-        .offline-indicator.show {
-            transform: translateY(0);
-        }
-        
-        /* Mobile-first responsive grid */
-        .notes-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
-        }
-        
-        @media (min-width: 768px) {
-            .notes-grid {
-                grid-template-columns: repeat(3, 1fr);
-            }
-        }
-        
-        @media (min-width: 1024px) {
-            .notes-grid {
-                grid-template-columns: repeat(4, 1fr);
-            }
-        }
-        
-        @media (min-width: 1280px) {
-            .notes-grid {
-                grid-template-columns: repeat(5, 1fr);
-            }
-        }
-    </style>
 </head>
-<body class="bg-gray-50 font-sans">
+<body class="bg-gray-50">
     <!-- Offline Indicator -->
-    <div id="offlineIndicator" class="offline-indicator">
+    <div id="offlineIndicator" class="hidden fixed top-0 left-0 right-0 bg-yellow-500 text-white text-center py-2 z-50">
         📡 You're offline - Changes will sync when connection is restored
     </div>
 
     <!-- App Container -->
     <div id="app" class="min-h-screen">
-        <!-- Sign Up Screen -->
+        <!-- Sign In Screen -->
         <div id="signupScreen" class="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center p-4">
             <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md slide-in">
                 <div class="text-center mb-8">
@@ -162,7 +58,7 @@
                         </svg>
                     </div>
                     <h1 class="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
-                    <p class="text-gray-600">Sign in to your account</p>
+                    <p class="text-gray-600">Sign in to continue</p>
                 </div>
                 
                 <form id="signupForm" class="space-y-6">
@@ -195,347 +91,40 @@
         </div>
 
         <!-- Main App Screen -->
-        <div id="mainApp" class="hidden min-h-screen">
-            <!-- Header -->
-            <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div class="flex items-center justify-between h-16">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
-                                <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                </svg>
-                            </div>
-                            <h1 class="text-xl font-bold text-gray-900">NotesFlow</h1>
-                        </div>
-                        
-                        <div class="flex items-center space-x-3">
-                            <button onclick="openAddNoteModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium flex items-center space-x-2">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                </svg>
-                                <span class="hidden sm:inline">Add Note</span>
-                            </button>
-                            
-                            <div id="syncStatus" class="hidden text-sm text-gray-500">
-                                <span class="inline-block w-2 h-2 bg-green-400 rounded-full mr-1"></span>
-                                Synced
-                            </div>
-                            <button id="userMenu" class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center hover:bg-gray-300">
-                                <span class="text-sm font-medium text-gray-700" id="userInitial">U</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </header>
-
-            <!-- Search Bar -->
-            <div class="bg-white border-b border-gray-200 px-4 py-4">
-                <div class="max-w-7xl mx-auto">
-                    <div class="relative">
-                        <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                        </svg>
-                        <input type="text" id="searchInput" placeholder="Search notes by title..." class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Notes Grid -->
-            <main class="max-w-7xl mx-auto px-4 py-6">
-                <div class="flex items-center justify-between mb-6">
-                    <div class="flex items-center space-x-2">
-                        <h2 class="text-lg font-semibold text-gray-900">Your Notes</h2>
-                        <span id="notesCount" class="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded-full">0</span>
-                    </div>
-                </div>
-                
-                <div id="notesGrid" class="notes-grid">
-                    <!-- Notes will be dynamically added here -->
-                </div>
-                
-                <!-- Empty State -->
-                <div id="emptyState" class="hidden text-center py-12">
-                    <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                        </svg>
-                    </div>
-                    <h3 class="text-lg font-medium text-gray-900 mb-2">No notes yet</h3>
-                    <p class="text-gray-500 mb-6">Create your first note to get started!</p>
-                    <button onclick="openAddNoteModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium">
-                        Create Your First Note
-                    </button>
-                </div>
-            </main>
-        </div>
-    </div>
-
-    <!-- Add/Edit Note Modal -->
-    <div id="noteModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md slide-in">
-            <div class="p-6">
-                <div class="flex items-center justify-between mb-6">
-                    <h3 id="modalTitle" class="text-xl font-bold text-gray-900">Add New Note</h3>
-                    <button onclick="closeNoteModal()" class="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center justify-center">
-                        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
-                </div>
-                
-                <form id="noteForm" class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Title</label>
-                        <input type="text" id="noteTitle" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none" placeholder="Enter note title">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Content</label>
-                        <textarea id="noteContent" rows="6" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none resize-none" placeholder="Enter note content"></textarea>
-                    </div>
-                    
-                    <div class="flex space-x-3 pt-4">
-                        <button type="submit" class="flex-1 bg-indigo-600 text-white py-3 rounded-lg font-medium hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 outline-none">
-                            Save Note
-                        </button>
-                        <button type="button" id="deleteNoteBtn" class="hidden px-6 bg-red-600 text-white py-3 rounded-lg font-medium hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 outline-none">
-                            Delete
-                        </button>
-                    </div>
-                </form>
-            </div>
+        <div id="mainApp" class="hidden min-h-screen bg-gray-50">
+            <!-- Rest of your app content -->
         </div>
     </div>
 
     <script>
-        // Supabase Configuration
-        // Replace these with your actual Supabase project credentials
-        const SUPABASE_URL = 'https://lmmksbunwywebqiaihon.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxtbWtzYnVud3l3ZWJxaWFpaG9uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUyODU4NTUsImV4cCI6MjA3MDg2MTg1NX0.0BEFgFr9oMmT07YronvjWJXs0IWJkQ4ICLhkJIPlcXg';
-        
-        // Initialize Supabase client
-        let supabase = null;
-        
-        // Check if Supabase credentials are configured
-        const isSupabaseConfigured = SUPABASE_URL !== 'YOUR_SUPABASE_URL_HERE' && SUPABASE_ANON_KEY !== 'YOUR_SUPABASE_ANON_KEY_HERE';
-        
-        if (isSupabaseConfigured) {
-            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        }
-
-        // PWA Service Worker Registration
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('data:text/javascript;base64,Y29uc3QgQ0FDSEVfTkFNRSA9ICdub3Rlc2Zsb3ctdjEnOwpjb25zdCB1cmxzVG9DYWNoZSA9IFsnLyddOwoKc2VsZi5hZGRFdmVudExpc3RlbmVyKCdpbnN0YWxsJywgZXZlbnQgPT4gewogIGV2ZW50LndhaXRVbnRpbCgKICAgIGNhY2hlcy5vcGVuKENBQ0hFX05BTUUpCiAgICAgIC50aGVuKGNhY2hlID0+IGNhY2hlLmFkZEFsbCh1cmxzVG9DYWNoZSkpCiAgKTsKfSk7CgpzZWxmLmFkZEV2ZW50TGlzdGVuZXIoJ2ZldGNoJywgZXZlbnQgPT4gewogIGV2ZW50LnJlc3BvbmRXaXRoKAogICAgY2FjaGVzLm1hdGNoKGV2ZW50LnJlcXVlc3QpCiAgICAgIC50aGVuKHJlc3BvbnNlID0+IHJlc3BvbnNlIHx8IGZldGNoKGV2ZW50LnJlcXVlc3QpKQogICk7Cn0pOw==')
-                    .then(registration => console.log('SW registered'))
-                    .catch(error => console.log('SW registration failed'));
-            });
-        }
-
-        // App State
         let currentUser = null;
         let notes = [];
         let editingNoteId = null;
-        let isOnline = navigator.onLine;
-        let syncInProgress = false;
 
-        // Initialize App
-        document.addEventListener('DOMContentLoaded', async function() {
-            // Setup event listeners
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Set up event listeners
             setupEventListeners();
-            
-            // Monitor online/offline status
-            window.addEventListener('online', handleOnline);
-            window.addEventListener('offline', handleOffline);
-            
-            updateOfflineIndicator();
-            
-            // Initialize authentication
-            await initializeAuth();
-            
-            // Load offline notes as fallback
-            loadOfflineNotes();
         });
 
-        async function initializeAuth() {
-            if (!isSupabaseConfigured) {
-                console.log('Supabase not configured, using offline mode');
-                showConfigurationMessage();
-                return;
-            }
-
-            try {
-                // Check if user is already authenticated
-                const { data: { session } } = await supabase.auth.getSession();
-                
-                if (session) {
-                    currentUser = {
-                        id: session.user.id,
-                        email: session.user.email,
-                        fullName: session.user.user_metadata.full_name || session.user.email
-                    };
-                    showMainApp();
-                    await loadNotesFromSupabase();
-                } else {
-                    // Check localStorage for offline user
-                    const savedUser = localStorage.getItem('notesflow_user');
-                    if (savedUser) {
-                        currentUser = JSON.parse(savedUser);
-                        showMainApp();
-                        loadOfflineNotes();
-                    }
-                }
-
-                // Listen for auth changes
-                supabase.auth.onAuthStateChange(async (event, session) => {
-                    if (event === 'SIGNED_IN' && session) {
-                        currentUser = {
-                            id: session.user.id,
-                            email: session.user.email,
-                            fullName: session.user.user_metadata.full_name || session.user.email
-                        };
-                        showMainApp();
-                        await loadNotesFromSupabase();
-                        showSuccessMessage('Successfully signed in!');
-                    } else if (event === 'SIGNED_OUT') {
-                        currentUser = null;
-                        notes = [];
-                        localStorage.removeItem('notesflow_user');
-                        localStorage.removeItem('notesflow_notes');
-                        showSignupScreen();
-                    }
-                });
-            } catch (error) {
-                console.error('Auth initialization error:', error);
-                showErrorMessage('Authentication error. Using offline mode.');
-            }
-        }
-
-        function showConfigurationMessage() {
-            const toast = document.createElement('div');
-            toast.className = 'fixed top-4 left-4 right-4 bg-yellow-500 text-white p-4 rounded-lg shadow-lg z-50 slide-in';
-            toast.innerHTML = `
-                <div class="flex items-start space-x-3">
-                    <svg class="w-6 h-6 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
-                    </svg>
-                    <div>
-                        <p class="font-medium">Supabase Not Configured</p>
-                        <p class="text-sm mt-1">Replace SUPABASE_URL and SUPABASE_ANON_KEY in the code with your actual Supabase credentials to enable cloud sync.</p>
-                    </div>
-                </div>
-            `;
-            
-            document.body.appendChild(toast);
-            
-            setTimeout(() => {
-                toast.remove();
-            }, 8000);
-        }
-
         function setupEventListeners() {
-            // Sign up form
+            // Authentication form
             document.getElementById('signupForm').addEventListener('submit', handleSignup);
-            
-            // Login toggle
             document.getElementById('loginToggle').addEventListener('click', toggleLoginMode);
             
             // Note form
-            document.getElementById('noteForm').addEventListener('submit', handleNoteSave);
+            document.getElementById('noteForm')?.addEventListener('submit', handleNoteSave);
             
             // Delete note button
-            document.getElementById('deleteNoteBtn').addEventListener('click', handleNoteDelete);
+            document.getElementById('deleteNoteBtn')?.addEventListener('click', handleNoteDelete);
             
             // Search functionality
-            document.getElementById('searchInput').addEventListener('input', handleSearch);
-            
-            // User menu
-            document.getElementById('userMenu').addEventListener('click', handleUserMenu);
-        }
-
-        async function handleSignup(e) {
-            e.preventDefault();
-            
-            const fullName = document.getElementById('fullName').value;
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const isLogin = document.querySelector('button[type="submit"]').textContent === 'Sign In';
-            
-            // Show loading state
-            const submitBtn = document.querySelector('button[type="submit"]');
-            const originalText = submitBtn.textContent;
-            submitBtn.textContent = isLogin ? 'Signing in...' : 'Creating account...';
-            submitBtn.disabled = true;
-            
-            try {
-                if (isSupabaseConfigured) {
-                    let result;
-                    
-                    if (isLogin) {
-                        // Sign in existing user
-                        result = await supabase.auth.signInWithPassword({
-                            email,
-                            password
-                        });
-                    } else {
-                        // Sign up new user
-                        result = await supabase.auth.signUp({
-                            email,
-                            password,
-                            options: {
-                                data: {
-                                    full_name: fullName
-                                }
-                            }
-                        });
-                    }
-                    
-                    if (result.error) {
-                        throw result.error;
-                    }
-                    
-                    if (!isLogin && result.data.user && !result.data.session) {
-                        showSuccessMessage('Please check your email to confirm your account!');
-                    } else if (result.data.session) {
-                        // User is signed in
-                        currentUser = {
-                            id: result.data.user.id,
-                            email: result.data.user.email,
-                            fullName: result.data.user.user_metadata.full_name || result.data.user.email
-                        };
-                        showMainApp();
-                        await loadNotesFromSupabase();
-                        showSuccessMessage(isLogin ? 'Welcome back!' : 'Account created successfully!');
-                    }
-                } else {
-                    // Fallback to offline mode
-                    const user = {
-                        id: Date.now().toString(),
-                        fullName: isLogin ? email : fullName,
-                        email,
-                        createdAt: new Date().toISOString()
-                    };
-                    
-                    currentUser = user;
-                    localStorage.setItem('notesflow_user', JSON.stringify(user));
-                    
-                    showMainApp();
-                    showSuccessMessage(isLogin ? 'Signed in offline!' : 'Account created offline!');
-                }
-            } catch (error) {
-                console.error('Auth error:', error);
-                showErrorMessage(error.message || 'Authentication failed. Please try again.');
-            } finally {
-                // Reset button state
-                submitBtn.textContent = originalText;
-                submitBtn.disabled = false;
-            }
+            document.getElementById('searchInput')?.addEventListener('input', handleSearch);
         }
 
         function toggleLoginMode() {
             const form = document.getElementById('signupForm');
             const title = form.parentElement.querySelector('h1');
+            const description = form.parentElement.querySelector('p');
             const button = form.querySelector('button[type="submit"]');
             const toggle = document.getElementById('loginToggle');
             const nameField = document.getElementById('fullName').parentElement;
@@ -545,164 +134,58 @@
             if (isCreateAccountMode) {
                 // Switch to login mode
                 title.textContent = 'Welcome Back';
+                description.textContent = 'Sign in to continue';
                 button.textContent = 'Sign In';
                 toggle.textContent = "Don't have an account? Sign up";
                 nameField.style.display = 'none';
+                document.getElementById('password').placeholder = 'Enter your password';
             } else {
                 // Switch to signup mode
-                title.textContent = 'Promptea';
+                title.textContent = 'Create Your Account';
+                description.textContent = 'Sign up to get started';
                 button.textContent = 'Create Account';
                 toggle.textContent = 'Already have an account? Sign in';
                 nameField.style.display = 'block';
+                document.getElementById('password').placeholder = 'Create a password';
             }
         }
 
-        function showMainApp() {
-            document.getElementById('signupScreen').classList.add('hidden');
-            document.getElementById('mainApp').classList.remove('hidden');
-            
-            // Set user initial
-            if (currentUser) {
-                const initial = currentUser.fullName ? currentUser.fullName.charAt(0).toUpperCase() : 'U';
-                document.getElementById('userInitial').textContent = initial;
-            }
-        }
-
-        function openAddNoteModal() {
-            editingNoteId = null;
-            document.getElementById('modalTitle').textContent = 'Add New Note';
-            document.getElementById('noteTitle').value = '';
-            document.getElementById('noteContent').value = '';
-            document.getElementById('deleteNoteBtn').classList.add('hidden');
-            document.getElementById('noteModal').classList.remove('hidden');
-            document.getElementById('noteTitle').focus();
-        }
-
-        function openEditNoteModal(noteId) {
-            const note = notes.find(n => n.id === noteId);
-            if (!note) return;
-            
-            editingNoteId = noteId;
-            document.getElementById('modalTitle').textContent = 'Edit Note';
-            document.getElementById('noteTitle').value = note.title;
-            document.getElementById('noteContent').value = note.content;
-            document.getElementById('deleteNoteBtn').classList.remove('hidden');
-            document.getElementById('noteModal').classList.remove('hidden');
-            document.getElementById('noteTitle').focus();
-        }
-
-        function closeNoteModal() {
-            document.getElementById('noteModal').classList.add('hidden');
-            editingNoteId = null;
-        }
-
-        async function handleNoteSave(e) {
+        async function handleSignup(e) {
             e.preventDefault();
             
-            const title = document.getElementById('noteTitle').value;
-            const content = document.getElementById('noteContent').value;
+            const fullName = document.getElementById('fullName').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const isLogin = document.querySelector('button[type="submit"]').textContent.trim() === 'Sign In';
             
             // Show loading state
-            const submitBtn = document.querySelector('#noteForm button[type="submit"]');
+            const submitBtn = document.querySelector('button[type="submit"]');
             const originalText = submitBtn.textContent;
-            submitBtn.textContent = 'Saving...';
+            submitBtn.textContent = isLogin ? 'Signing in...' : 'Creating account...';
             submitBtn.disabled = true;
             
             try {
-                if (editingNoteId) {
-                    // Update existing note
-                    const noteIndex = notes.findIndex(n => n.id === editingNoteId);
-                    if (noteIndex !== -1) {
-                        const updatedNote = {
-                            ...notes[noteIndex],
-                            title,
-                            content,
-                            updated_at: new Date().toISOString()
-                        };
-                        
-                        if (isSupabaseConfigured && isOnline) {
-                            const { error } = await supabase
-                                .from('notes')
-                                .update({
-                                    title,
-                                    content,
-                                    updated_at: updatedNote.updated_at
-                                })
-                                .eq('id', editingNoteId);
-                            
-                            if (error) throw error;
-                        }
-                        
-                        notes[noteIndex] = updatedNote;
-                    }
-                } else {
-                    // Create new note
-                    const newNote = {
-                        id: Date.now().toString(),
-                        title,
-                        content,
-                        user_id: currentUser.id,
-                        created_at: new Date().toISOString(),
-                        updated_at: new Date().toISOString()
-                    };
-                    
-                    if (isSupabaseConfigured && isOnline) {
-                        const { data, error } = await supabase
-                            .from('notes')
-                            .insert([{
-                                title,
-                                content,
-                                user_id: currentUser.id
-                            }])
-                            .select()
-                            .single();
-                        
-                        if (error) throw error;
-                        
-                        // Use the ID from Supabase
-                        newNote.id = data.id;
-                        newNote.created_at = data.created_at;
-                        newNote.updated_at = data.updated_at;
-                    }
-                    
-                    notes.push(newNote);
-                }
+                // Using offline mode only
+                const user = {
+                    id: Date.now().toString(),
+                    fullName: isLogin ? email : fullName,
+                    email,
+                    createdAt: new Date().toISOString()
+                };
                 
-                saveNotesOffline();
-                renderNotes();
-                closeNoteModal();
-                showSuccessMessage(editingNoteId ? 'Note updated!' : 'Note created!');
+                // Save user to localStorage
+                currentUser = user;
+                localStorage.setItem('promptea_user', JSON.stringify(user));
                 
+                // Show main app
+                showMainApp();
+                showSuccessMessage(isLogin ? 'Welcome back!' : 'Account created successfully!');
+                
+                // Load notes
+                loadNotes();
             } catch (error) {
-                console.error('Save error:', error);
-                showErrorMessage('Failed to save note. Saved offline instead.');
-                
-                // Fallback to offline save
-                if (editingNoteId) {
-                    const noteIndex = notes.findIndex(n => n.id === editingNoteId);
-                    if (noteIndex !== -1) {
-                        notes[noteIndex] = {
-                            ...notes[noteIndex],
-                            title,
-                            content,
-                            updated_at: new Date().toISOString()
-                        };
-                    }
-                } else {
-                    const newNote = {
-                        id: Date.now().toString(),
-                        title,
-                        content,
-                        user_id: currentUser.id,
-                        created_at: new Date().toISOString(),
-                        updated_at: new Date().toISOString()
-                    };
-                    notes.push(newNote);
-                }
-                
-                saveNotesOffline();
-                renderNotes();
-                closeNoteModal();
+                console.error('Auth error:', error);
+                showErrorMessage('Authentication failed. Please try again.');
             } finally {
                 // Reset button state
                 submitBtn.textContent = originalText;
@@ -710,267 +193,55 @@
             }
         }
 
-        async function handleNoteDelete() {
-            if (!editingNoteId) return;
-            
-            if (confirm('Are you sure you want to delete this note?')) {
-                try {
-                    if (isSupabaseConfigured && isOnline) {
-                        const { error } = await supabase
-                            .from('notes')
-                            .delete()
-                            .eq('id', editingNoteId);
-                        
-                        if (error) throw error;
-                    }
-                    
-                    notes = notes.filter(n => n.id !== editingNoteId);
-                    saveNotesOffline();
-                    renderNotes();
-                    closeNoteModal();
-                    showSuccessMessage('Note deleted!');
-                    
-                } catch (error) {
-                    console.error('Delete error:', error);
-                    showErrorMessage('Failed to delete from server. Deleted locally.');
-                    
-                    // Fallback to local delete
-                    notes = notes.filter(n => n.id !== editingNoteId);
-                    saveNotesOffline();
-                    renderNotes();
-                    closeNoteModal();
-                }
-            }
+        function showMainApp() {
+            document.getElementById('signupScreen').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
         }
 
-        function copyNote(noteId) {
-            const note = notes.find(n => n.id === noteId);
-            if (!note) return;
-            
-            const textToCopy = `${note.title}\n\n${note.content}`;
-            
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(textToCopy).then(() => {
-                    showSuccessMessage('Note copied to clipboard!');
-                });
-            } else {
-                // Fallback for older browsers
-                const textArea = document.createElement('textarea');
-                textArea.value = textToCopy;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-                showSuccessMessage('Note copied to clipboard!');
-            }
-        }
-
-        function renderNotes(filteredNotes = null) {
-            const notesToRender = filteredNotes || notes;
-            const notesGrid = document.getElementById('notesGrid');
-            const emptyState = document.getElementById('emptyState');
-            
-            // Clear grid
-            notesGrid.innerHTML = '';
-            
-            // Update count
-            document.getElementById('notesCount').textContent = notesToRender.length;
-            
-            if (notesToRender.length === 0) {
-                emptyState.classList.remove('hidden');
-                return;
-            }
-            
-            emptyState.classList.add('hidden');
-            
-            // Render notes
-            notesToRender.forEach(note => {
-                const noteCard = createNoteCard(note);
-                notesGrid.appendChild(noteCard);
-            });
-        }
-
-        function createNoteCard(note) {
-            const card = document.createElement('div');
-            card.className = 'bg-white rounded-xl p-4 border border-gray-200 hover:shadow-lg transition-all duration-200 fade-in h-fit';
-            
-            // Handle both Supabase format (created_at) and local format (createdAt)
-            const createdDate = note.created_at || note.createdAt;
-            const updatedDate = note.updated_at || note.updatedAt;
-            
-            card.innerHTML = `
-                <div class="flex items-start justify-between mb-3">
-                    <h3 class="font-semibold text-gray-900 flex-1 pr-2 line-clamp-2">${escapeHtml(note.title)}</h3>
-                </div>
-                
-                <p class="text-gray-600 text-sm mb-4 line-clamp-4">${escapeHtml(note.content)}</p>
-                
-                <div class="flex items-center justify-between">
-                    <span class="text-xs text-gray-400">
-                        ${new Date(createdDate).toLocaleDateString()}
-                        ${updatedDate && updatedDate !== createdDate ? ' (edited)' : ''}
-                    </span>
-                    
-                    <div class="flex space-x-1">
-                        <button onclick="copyNote('${note.id}')" class="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="Copy note">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-                            </svg>
-                        </button>
-                        
-                        <button onclick="openEditNoteModal('${note.id}')" class="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="Edit note">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            `;
-            
-            return card;
-        }
-
-        function handleSearch(e) {
-            const searchTerm = e.target.value.toLowerCase();
-            
-            if (!searchTerm) {
-                renderNotes();
-                return;
-            }
-            
-            const filteredNotes = notes.filter(note => 
-                note.title.toLowerCase().includes(searchTerm) ||
-                note.content.toLowerCase().includes(searchTerm)
-            );
-            
-            renderNotes(filteredNotes);
-        }
-
-        async function handleUserMenu() {
-            if (confirm('Do you want to sign out?')) {
-                try {
-                    if (isSupabaseConfigured) {
-                        await supabase.auth.signOut();
-                    }
-                } catch (error) {
-                    console.error('Sign out error:', error);
-                }
-                
-                localStorage.removeItem('notesflow_user');
-                localStorage.removeItem('notesflow_notes');
-                currentUser = null;
-                notes = [];
-                
-                showSignupScreen();
-                
-                // Reset form
-                document.getElementById('signupForm').reset();
-            }
-        }
-
-        async function loadNotesFromSupabase() {
-            if (!isSupabaseConfigured || !currentUser) {
-                loadOfflineNotes();
-                return;
-            }
-            
-            try {
-                setSyncStatus('syncing');
-                
-                const { data, error } = await supabase
-                    .from('notes')
-                    .select('*')
-                    .eq('user_id', currentUser.id)
-                    .order('created_at', { ascending: false });
-                
-                if (error) throw error;
-                
-                notes = data || [];
-                saveNotesOffline();
-                renderNotes();
-                setSyncStatus('synced');
-                
-            } catch (error) {
-                console.error('Load notes error:', error);
-                setSyncStatus('error');
-                showErrorMessage('Failed to sync notes. Using offline data.');
-                loadOfflineNotes();
-            }
-        }
-
-        function showSignupScreen() {
-            document.getElementById('mainApp').classList.add('hidden');
-            document.getElementById('signupScreen').classList.remove('hidden');
-        }
-
-        function saveNotesOffline() {
-            localStorage.setItem('notesflow_notes', JSON.stringify(notes));
-        }
-
-        function loadOfflineNotes() {
-            const savedNotes = localStorage.getItem('notesflow_notes');
+        function loadNotes() {
+            const savedNotes = localStorage.getItem('promptea_notes');
             if (savedNotes) {
                 notes = JSON.parse(savedNotes);
                 renderNotes();
             }
         }
 
-        async function handleOnline() {
-            isOnline = true;
-            updateOfflineIndicator();
+        function renderNotes(searchTerm = '') {
+            const notesList = document.getElementById('notesList');
+            const filteredNotes = searchTerm
+                ? notes.filter(note => 
+                    note.title.toLowerCase().includes(searchTerm) || 
+                    note.content.toLowerCase().includes(searchTerm))
+                : notes;
             
-            if (isSupabaseConfigured && currentUser) {
-                showSuccessMessage('Back online! Syncing data...');
-                await loadNotesFromSupabase();
-            }
+            notesList.innerHTML = filteredNotes.length
+                ? filteredNotes.map(note => `
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow cursor-pointer"
+                         onclick="openNote('${note.id}')">
+                        <h3 class="font-medium text-gray-900 mb-1">${note.title}</h3>
+                        <p class="text-gray-600 text-sm line-clamp-2">${note.content}</p>
+                        <div class="flex items-center space-x-2 mt-2 text-xs text-gray-500">
+                            <span>${new Date(note.created_at).toLocaleDateString()}</span>
+                            ${note.updated_at ? `
+                                <span>•</span>
+                                <span>Updated ${new Date(note.updated_at).toLocaleDateString()}</span>
+                            ` : ''}
+                        </div>
+                    </div>
+                `).join('')
+                : '<div class="text-center text-gray-500 py-8">No notes yet. Create your first note!</div>';
         }
 
-        function handleOffline() {
-            isOnline = false;
-            updateOfflineIndicator();
-            setSyncStatus('offline');
+        async function handleSearch(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            renderNotes(searchTerm);
         }
 
-        function updateOfflineIndicator() {
-            const indicator = document.getElementById('offlineIndicator');
-            if (isOnline) {
-                indicator.classList.remove('show');
-            } else {
-                indicator.classList.add('show');
-            }
-        }
-
-        function setSyncStatus(status) {
-            const syncStatus = document.getElementById('syncStatus');
-            
-            switch (status) {
-                case 'syncing':
-                    syncStatus.innerHTML = '<span class="inline-block w-2 h-2 bg-yellow-400 rounded-full mr-1 animate-pulse"></span>Syncing';
-                    syncStatus.classList.remove('hidden');
-                    break;
-                case 'synced':
-                    syncStatus.innerHTML = '<span class="inline-block w-2 h-2 bg-green-400 rounded-full mr-1"></span>Synced';
-                    syncStatus.classList.remove('hidden');
-                    break;
-                case 'error':
-                    syncStatus.innerHTML = '<span class="inline-block w-2 h-2 bg-red-400 rounded-full mr-1"></span>Sync Error';
-                    syncStatus.classList.remove('hidden');
-                    break;
-                case 'offline':
-                    syncStatus.innerHTML = '<span class="inline-block w-2 h-2 bg-gray-400 rounded-full mr-1"></span>Offline';
-                    syncStatus.classList.remove('hidden');
-                    break;
-                default:
-                    syncStatus.classList.add('hidden');
-            }
-        }
-
+        // Toast messages
         function showSuccessMessage(message) {
-            // Create toast notification
             const toast = document.createElement('div');
             toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 slide-in';
             toast.textContent = message;
-            
             document.body.appendChild(toast);
             
             setTimeout(() => {
@@ -979,57 +250,39 @@
         }
 
         function showErrorMessage(message) {
-            // Create error toast notification
             const toast = document.createElement('div');
             toast.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 slide-in';
             toast.textContent = message;
-            
             document.body.appendChild(toast);
             
             setTimeout(() => {
                 toast.remove();
             }, 5000);
         }
-
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        // Add some sample data for demo
-        setTimeout(() => {
-            if (notes.length === 0 && currentUser) {
-                notes = [
-                    {
-                        id: '1',
-                        title: 'Welcome to NotesFlow! 🎉',
-                        content: 'This is your first note. You can edit, copy, or delete it using the buttons below. The app works completely offline and will sync when you\'re back online.',
-                        userId: currentUser.id,
-                        createdAt: new Date().toISOString(),
-                        updatedAt: new Date().toISOString()
-                    },
-                    {
-                        id: '2',
-                        title: 'Try the search feature 🔍',
-                        content: 'Use the search bar at the top to quickly find notes by title or content. It\'s super fast and works even when you\'re offline!',
-                        userId: currentUser.id,
-                        createdAt: new Date().toISOString(),
-                        updatedAt: new Date().toISOString()
-                    },
-                    {
-                        id: '3',
-                        title: 'Mobile-first design 📱',
-                        content: 'This app is designed mobile-first with 2 cards per row on mobile devices. It scales beautifully to larger screens too!',
-                        userId: currentUser.id,
-                        createdAt: new Date().toISOString(),
-                        updatedAt: new Date().toISOString()
-                    }
-                ];
-                saveNotesOffline();
-                renderNotes();
-            }
-        }, 1000);
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96fb287837174121',t:'MTc1NTI4Njc2OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+
+    <style>
+        @keyframes slideIn {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+    </style>
+</body>
 </html>
