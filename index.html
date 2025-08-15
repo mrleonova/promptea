@@ -99,11 +99,25 @@
     <script>
         let currentUser = null;
         let notes = [];
-        let editingNoteId = null;
+        let currentNoteId = null;
+        let title, content, dialog;
 
         document.addEventListener('DOMContentLoaded', async () => {
+            // Initialize form elements
+            title = document.getElementById('title');
+            content = document.getElementById('content');
+            dialog = document.getElementById('noteDialog');
+            
             // Set up event listeners
             setupEventListeners();
+            
+            // Check if user is already logged in
+            const savedUser = localStorage.getItem('promptea_user');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                showMainApp();
+                loadNotes();
+            }
         });
 
         function setupEventListeners() {
@@ -265,7 +279,7 @@
             };
             
             notes.unshift(newNote);
-            localStorage.setItem('notes', JSON.stringify(notes));
+            localStorage.setItem('promptea_notes', JSON.stringify(notes));
             renderNotes();
             showSuccessMessage('Note copied successfully');
         }
